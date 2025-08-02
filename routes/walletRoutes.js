@@ -128,5 +128,21 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
         }
     });
 
+    // Delete a wallet
+    router.delete('/:walletId', async (req, res) => {
+        const { walletId } = req.params;
+        if (!walletId) return res.status(400).json({ error: 'walletId is required' });
+
+        try {
+            const wallet = await Wallet.findByIdAndDelete(walletId);
+            if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
+
+            res.status(200).json({ message: 'Wallet deleted successfully', wallet });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Failed to delete wallet' });
+        }
+    });
+
     return router;
 };

@@ -91,5 +91,21 @@ module.exports = (SingleWallet, tronWeb) => {
         }
     });
 
+    // Delete a single wallet
+    router.delete('/:walletId', async (req, res) => {
+        const { walletId } = req.params;
+        if (!walletId) return res.status(400).json({ error: 'walletId is required' });
+
+        try {
+            const wallet = await SingleWallet.findByIdAndDelete(walletId);
+            if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
+
+            res.status(200).json({ message: 'Single wallet deleted successfully', wallet });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Failed to delete single wallet' });
+        }
+    });
+
     return router;
 };
