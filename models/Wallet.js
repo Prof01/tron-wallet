@@ -4,7 +4,7 @@ const SignerSchema = new mongoose.Schema({
     address: { type: String, required: true },
     publicKey: { type: String, required: true },
     privateKey: { type: String, required: true },
-    passphrase: { type: String, required: true }
+    mnemonic: { type: String, required: true }
 }, { _id: false });
 
 const WalletSchema = new mongoose.Schema({

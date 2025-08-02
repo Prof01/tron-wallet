@@ -60,8 +60,8 @@ const Approval = require('./models/Approval');
 const SweepLog = require('./models/SweepLog');
 
 const DEFAULT_PASSPHRASES = [
-    crypto.randomBytes(8).toString('hex'),
-    crypto.randomBytes(8).toString('hex')
+    bip39.generateMnemonic(),
+    bip39.generateMnemonic()
 ];
 
 

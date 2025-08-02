@@ -1,0 +1,42 @@
+### Generate Wallet
+POST http://localhost:5000/api/wallets/generate
+Content-Type: application/json
+
+
+### Update Multisig Permissions
+POST http://localhost:5000/api/wallets/update-permission
+Content-Type: application/json
+
+{
+    "walletId": "exampleWalletId"
+}
+
+### Get TRX Balance
+GET http://localhost:5000/api/wallets/balance/trx/exampleAddress
+
+### Get TRC20 Token Balance
+GET http://localhost:5000/api/wallets/balance/trc20/exampleAddress/exampleContractAddress
+
+### Register User
+POST http://localhost:5000/api/users/register
+Content-Type: application/json
+
+{
+    "username": "exampleUser",
+    "password": "examplePassword"
+}
+
+### Login User
+POST http://localhost:5000/api/users/login
+Content-Type: application/json
+
+{
+    "username": "exampleUser",
+    "password": "examplePassword"
+}
+
+### Logout User
+POST http://localhost:5000/api/users/logout
+
+### Delete User
+DELETE http://localhost:5000/api/users/exampleUserId

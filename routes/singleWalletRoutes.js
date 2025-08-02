@@ -1,18 +1,26 @@
 const express = require('express');
 const router = express.Router();
+const hdkey = require('hdkey');
+const { generateMnemonic, mnemonicToSeedSync } = require('bip39');
 
-module.exports = (SingleWallet, tronWeb, bip39) => {
+module.exports = (SingleWallet, tronWeb) => {
     // Generate a single-user wallet
     router.post('/generate', async (req, res) => {
         try {
-            const mnemonic = await bip39.generateMnemonic();
-            const account = await tronWeb.createAccount();
+            const mnemonic = generateMnemonic();
+            const seed = mnemonicToSeedSync(mnemonic);
+            const root = hdkey.fromMasterSeed(seed);
+            const child = root.derive("m/44'/195'/0'/0/0"); // Tron uses BIP44 path 195
+            const privateKey = child.privateKey.toString('hex');
+            const address = tronWeb.address.fromPrivateKey(privateKey);
+
             const wallet = await SingleWallet.create({
-                address: account.address.base58,
-                publicKey: account.publicKey,
-                privateKey: account.privateKey,
+                address,
+                publicKey: child.publicKey.toString('hex'),
+                privateKey,
                 mnemonic
             });
+
             res.status(201).json({ wallet });
         } catch (err) {
             console.error(err);

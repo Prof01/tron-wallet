@@ -1,31 +1,39 @@
 const express = require('express');
 const router = express.Router();
+const hdkey = require('hdkey');
+const { generateMnemonic, mnemonicToSeedSync } = require('bip39');
+const generateAccountWithPassphrase = require('../functions/generateAccountWithPassphrase');
 
-module.exports = (Wallet, tronWeb, bip39, generateAccountWithPassphrase, DEFAULT_PASSPHRASES) => {
+module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
+    // Updated wallet generation to ensure mnemonic consistency
     router.post('/generate', async (req, res) => {
         try {
-            const mnemonic = await bip39.generateMnemonic();
-            const account = await tronWeb.createAccount();
+            const mnemonic = generateMnemonic();
+            const seed = mnemonicToSeedSync(mnemonic);
+            const root = hdkey.fromMasterSeed(seed);
+            const child = root.derive("m/44'/195'/0'/0/0"); // Tron uses BIP44 path 195
+            const privateKey = child.privateKey.toString('hex');
+            const address = tronWeb.address.fromPrivateKey(privateKey);
 
             const signer1 = await generateAccountWithPassphrase(tronWeb, DEFAULT_PASSPHRASES[0]);
             const signer2 = await generateAccountWithPassphrase(tronWeb, DEFAULT_PASSPHRASES[1]);
 
             const wallet = await Wallet.create({
-                address: account.address.base58,
-                publicKey: account.publicKey,
-                privateKey: account.privateKey,
+                address,
+                publicKey: child.publicKey.toString('hex'),
+                privateKey,
                 mnemonic,
                 signerOne: {
-                    address: signer1.address.base58,
+                    address: signer1.address,
                     publicKey: signer1.publicKey,
                     privateKey: signer1.privateKey,
-                    passphrase: signer1.passphrase,
+                    mnemonic: signer1.mnemonic,
                 },
                 signerTwo: {
-                    address: signer2.address.base58,
+                    address: signer2.address,
                     publicKey: signer2.publicKey,
                     privateKey: signer2.privateKey,
-                    passphrase: signer2.passphrase,
+                    mnemonic: signer2.mnemonic,
                 }
             });
 
