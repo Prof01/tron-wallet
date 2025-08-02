@@ -107,5 +107,16 @@ module.exports = (SingleWallet, tronWeb) => {
         }
     });
 
+    // Get all single wallets
+    router.get('/', async (req, res) => {
+        try {
+            const wallets = await SingleWallet.find();
+            res.status(200).json({ wallets });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Failed to fetch single wallets' });
+        }
+    });
+
     return router;
 };

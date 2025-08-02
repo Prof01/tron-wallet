@@ -144,5 +144,16 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
         }
     });
 
+    // Get all wallets
+    router.get('/', async (req, res) => {
+        try {
+            const wallets = await Wallet.find();
+            res.status(200).json({ wallets });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Failed to fetch wallets' });
+        }
+    });
+
     return router;
 };
