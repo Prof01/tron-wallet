@@ -135,6 +135,8 @@ cron.schedule('* * * * *', async () => {
                             error: JSON.stringify(sweepResult)
                         });
                     }
+                    console.log('Polling complete....');
+                    
                 } catch (sweepErr) {
                     console.error(`Sweep error for wallet ${wallet.address}:`, sweepErr);
                 }
