@@ -46,3 +46,45 @@ GET http://localhost:5000/api/users
 
 ### Get User By ID
 GET http://localhost:5000/api/users/688f12052564638c02205453
+
+### Get All Wallets
+GET http://localhost:5000/api/wallets
+
+### Delete Wallet
+DELETE http://localhost:5000/api/wallets/688db2cd0d0329746cc8e0c0
+
+### Get All Single Wallets
+GET http://localhost:5000/api/single-wallets
+
+### Generate Single Wallet
+POST http://localhost:5000/api/single-wallets/generate
+Content-Type: application/json
+
+{}
+
+### Delete Single Wallet
+DELETE http://localhost:5000/api/single-wallets/exampleSingleWalletId
+
+### Send TRX from Single Wallet
+POST http://localhost:5000/api/single-wallets/trx
+Content-Type: application/json
+
+{
+    "walletId": "exampleSingleWalletId",
+    "toAddress": "exampleRecipientAddress",
+    "amount": 10
+}
+
+### Send TRC20 Token from Single Wallet
+POST http://localhost:5000/api/single-wallets/trc20
+Content-Type: application/json
+
+{
+    "walletId": "exampleSingleWalletId",
+    "toAddress": "exampleRecipientAddress",
+    "amount": 100,
+    "contractAddress": "exampleContractAddress"
+}
+
+### Get Wallet By ID
+GET http://localhost:5000/api/wallets/688db2cd0d0329746cc8e0c0

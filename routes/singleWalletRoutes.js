@@ -24,7 +24,7 @@ module.exports = (SingleWallet, tronWeb) => {
             res.status(201).json({ wallet });
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: 'Failed to generate wallet' });
+            res.status(500).json({ msg: 'Failed to generate wallet' });
         }
     });
 
@@ -32,17 +32,17 @@ module.exports = (SingleWallet, tronWeb) => {
     router.post('/trx', async (req, res) => {
         const { walletId, toAddress, amount } = req.body;
         if (!walletId || !toAddress || !amount)
-            return res.status(400).json({ error: 'Missing required fields' });
+            return res.status(400).json({ msg: 'Missing required fields' });
         try {
             const wallet = await SingleWallet.findById(walletId);
-            if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
+            if (!wallet) return res.status(404).json({ msg: 'Wallet not found' });
             const tx = await tronWeb.transactionBuilder.sendTrx(toAddress, tronWeb.toSun(amount), wallet.address);
             const signedTx = await tronWeb.trx.sign(tx, wallet.privateKey);
             const broadcast = await tronWeb.trx.sendRawTransaction(signedTx);
             res.status(200).json({ message: 'TRX sent', broadcast });
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: 'TRX transaction failed' });
+            res.status(500).json({ msg: 'TRX transaction failed' });
         }
     });
 
@@ -50,10 +50,10 @@ module.exports = (SingleWallet, tronWeb) => {
     router.post('/trc20', async (req, res) => {
         const { walletId, toAddress, amount, tokenContractAddress } = req.body;
         if (!walletId || !toAddress || !amount || !tokenContractAddress)
-            return res.status(400).json({ error: 'Missing required fields' });
+            return res.status(400).json({ msg: 'Missing required fields' });
         try {
             const wallet = await SingleWallet.findById(walletId);
-            if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
+            if (!wallet) return res.status(404).json({ msg: 'Wallet not found' });
             const contract = await tronWeb.contract().at(tokenContractAddress);
             const tx = await contract.methods.transfer(toAddress, tronWeb.toSun(amount)).send({
                 from: wallet.address,
@@ -62,7 +62,7 @@ module.exports = (SingleWallet, tronWeb) => {
             res.status(200).json({ message: 'TRC20 sent', tx });
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: 'TRC20 transaction failed' });
+            res.status(500).json({ msg: 'TRC20 transaction failed' });
         }
     });
 
@@ -74,7 +74,7 @@ module.exports = (SingleWallet, tronWeb) => {
             res.json({ address, balance: tronWeb.fromSun(balance) });
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: 'Failed to fetch TRX balance' });
+            res.status(500).json({ msg: 'Failed to fetch TRX balance' });
         }
     });
 
@@ -87,23 +87,23 @@ module.exports = (SingleWallet, tronWeb) => {
             res.json({ address, tokenContractAddress, balance: tronWeb.fromSun(balance) });
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: 'Failed to fetch TRC20 balance' });
+            res.status(500).json({ msg: 'Failed to fetch TRC20 balance' });
         }
     });
 
     // Delete a single wallet
     router.delete('/:walletId', async (req, res) => {
         const { walletId } = req.params;
-        if (!walletId) return res.status(400).json({ error: 'walletId is required' });
+        if (!walletId) return res.status(400).json({ msg: 'walletId is required' });
 
         try {
             const wallet = await SingleWallet.findByIdAndDelete(walletId);
-            if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
+            if (!wallet) return res.status(404).json({ msg: 'Wallet not found' });
 
             res.status(200).json({ message: 'Single wallet deleted successfully', wallet });
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: 'Failed to delete single wallet' });
+            res.status(500).json({ msg: 'Failed to delete single wallet' });
         }
     });
 
@@ -114,7 +114,7 @@ module.exports = (SingleWallet, tronWeb) => {
             res.status(200).json({ wallets });
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: 'Failed to fetch single wallets' });
+            res.status(500).json({ msg: 'Failed to fetch single wallets' });
         }
     });
 

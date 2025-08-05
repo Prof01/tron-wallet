@@ -6,12 +6,12 @@ module.exports = (Wallet, Approval, tronWeb) => {
     router.post('/trx', async (req, res) => {
         const { walletId, toAddress, amount, signerPassphrase } = req.body;
         if (!walletId || !toAddress || !amount || !signerPassphrase)
-            return res.status(400).json({ error: 'Missing required fields' });
+            return res.status(400).json({ msg: 'Missing required fields' });
 
         try {
             const wallet = await Wallet.findById(walletId);
             const signer = [wallet.signerOne, wallet.signerTwo].find(s => s.passphrase === signerPassphrase);
-            if (!signer) return res.status(403).json({ error: 'Invalid signer' });
+            if (!signer) return res.status(403).json({ msg: 'Invalid signer' });
 
             let approval = await Approval.findOne({ walletId, type: 'TRX', toAddress, amount, executed: false });
 
@@ -28,12 +28,12 @@ module.exports = (Wallet, Approval, tronWeb) => {
                     signatures: [signedTx.signature[0]],
                     rawTx: signedTx // Store the signedTx object for further signing
                 });
-                return res.status(200).json({ message: 'First signature collected. Awaiting second signature.' });
+                return res.status(200).json({ msg: 'First signature collected. Awaiting second signature.' });
             }
 
             // If already signed by this signer, do not allow duplicate
             if (approval.approvals.includes(signerPassphrase)) {
-                return res.status(400).json({ error: 'This signer has already approved.' });
+                return res.status(400).json({ msg: 'This signer has already approved.' });
             }
 
             // Add second signature
@@ -53,14 +53,14 @@ module.exports = (Wallet, Approval, tronWeb) => {
                 const broadcast = await tronWeb.trx.sendRawTransaction(multiSignedTx);
                 approval.executed = true;
                 await approval.save();
-                return res.status(200).json({ message: 'TRX sent with multisig', broadcast });
+                return res.status(200).json({ msg: 'TRX sent with multisig', broadcast });
             }
 
             await approval.save();
-            res.status(200).json({ message: 'Second signature collected. Awaiting broadcast.' });
+            res.status(200).json({ msg: 'Second signature collected. Awaiting broadcast.' });
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: 'TRX withdrawal failed' });
+            res.status(500).json({ msg: 'TRX withdrawal failed' });
         }
     });
 
@@ -68,12 +68,12 @@ module.exports = (Wallet, Approval, tronWeb) => {
     router.post('/trc20', async (req, res) => {
         const { walletId, toAddress, amount, tokenContractAddress, signerPassphrase } = req.body;
         if (!walletId || !toAddress || !amount || !tokenContractAddress || !signerPassphrase)
-            return res.status(400).json({ error: 'Missing required fields' });
+            return res.status(400).json({ msg: 'Missing required fields' });
 
         try {
             const wallet = await Wallet.findById(walletId);
             const signer = [wallet.signerOne, wallet.signerTwo].find(s => s.passphrase === signerPassphrase);
-            if (!signer) return res.status(403).json({ error: 'Invalid signer' });
+            if (!signer) return res.status(403).json({ msg: 'Invalid signer' });
 
             let approval = await Approval.findOne({ walletId, type: 'TRC20', toAddress, amount, tokenContractAddress, executed: false });
 
@@ -97,12 +97,12 @@ module.exports = (Wallet, Approval, tronWeb) => {
                     signatures: [signedTx.signature[0]],
                     rawTx: signedTx
                 });
-                return res.status(200).json({ message: 'First signature collected. Awaiting second signature.' });
+                return res.status(200).json({ msg: 'First signature collected. Awaiting second signature.' });
             }
 
             // If already signed by this signer, do not allow duplicate
             if (approval.approvals.includes(signerPassphrase)) {
-                return res.status(400).json({ error: 'This signer has already approved.' });
+                return res.status(400).json({ msg: 'This signer has already approved.' });
             }
 
             // Add second signature
@@ -120,14 +120,14 @@ module.exports = (Wallet, Approval, tronWeb) => {
                 const broadcast = await tronWeb.trx.sendRawTransaction(multiSignedTx);
                 approval.executed = true;
                 await approval.save();
-                return res.status(200).json({ message: 'TRC20 sent with multisig', broadcast });
+                return res.status(200).json({ msg: 'TRC20 sent with multisig', broadcast });
             }
 
             await approval.save();
-            res.status(200).json({ message: 'Second signature collected. Awaiting broadcast.' });
+            res.status(200).json({ msg: 'Second signature collected. Awaiting broadcast.' });
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: 'TRC20 withdrawal failed' });
+            res.status(500).json({ msg: 'TRC20 withdrawal failed' });
         }
     });
 

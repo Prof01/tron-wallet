@@ -32,7 +32,7 @@ router.put('/:id', async (req, res) => {
         const { id } = req.params;
         const updates = req.body;
         const updatedUser = await User.findByIdAndUpdate(id, updates, { new: true });
-        if (!updatedUser) return res.status(404).json({ error: 'User not found' });
+        if (!updatedUser) return res.status(404).json({ msg: 'User not found' });
         res.json(updatedUser);
     } catch (err) {
         res.status(500).json({ msg: 'Error updating user', details: err.message });
@@ -56,7 +56,7 @@ router.post('/login', passport.authenticate('user-local'), (req, res) => {
     req.login(req.user, (err) => {
         if (err) {
             console.error('Error during login:', err);
-            return res.status(500).json({ error: 'Login failed', details: err.message });
+            return res.status(500).json({ msg: 'Login failed', details: err.message });
         }
         res.json({ msg: 'Login successful', user: req.user });
     });
