@@ -3,10 +3,11 @@ const router = express.Router();
 const hdkey = require('hdkey');
 const { generateMnemonic, mnemonicToSeedSync } = require('bip39');
 const generateAccountWithPassphrase = require('../functions/generateAccountWithPassphrase');
+const ensureAuthenticated = require('../config/auth');
 
 module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
     // Updated wallet generation to ensure mnemonic consistency
-    router.post('/generate', async (req, res) => {
+    router.post('/generate', ensureAuthenticated, async (req, res) => {
         try {
             const mnemonic = generateMnemonic();
             const seed = mnemonicToSeedSync(mnemonic);
@@ -45,7 +46,7 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
     });
 
     // New route: Update multisig permissions for an existing wallet
-    router.post('/update-permission', async (req, res) => {
+    router.post('/update-permission', ensureAuthenticated, async (req, res) => {
         const { walletId } = req.body;
         if (!walletId) return res.status(400).json({ msg: 'walletId is required' });
 
@@ -53,47 +54,62 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
             const wallet = await Wallet.findById(walletId);
             if (!wallet) return res.status(404).json({ msg: 'Wallet not found' });
 
-            // Prepare multisig permission structure
+            // Convert addresses to hex format
+            const signerOneHex = tronWeb.address.toHex(wallet.signerOne.address);
+            const signerTwoHex = tronWeb.address.toHex(wallet.signerTwo.address);
+
+            // Define owner permission
             const ownerPermission = {
                 type: 0,
-                permission_name: "owner",
+                permission_name: 'owner',
                 threshold: 2,
                 keys: [
-                    { address: tronWeb.address.toHex(wallet.signerOne.address), weight: 1 },
-                    { address: tronWeb.address.toHex(wallet.signerTwo.address), weight: 1 }
-                ]
-            };
-            const activePermission = {
-                type: 2,
-                permission_name: "active",
-                threshold: 2,
-                operations: "7fff1fc0033e0000000000000000000000000000000000000000000000000000",
-                keys: [
-                    { address: tronWeb.address.toHex(wallet.signerOne.address), weight: 1 },
-                    { address: tronWeb.address.toHex(wallet.signerTwo.address), weight: 1 }
+                    { address: signerOneHex, weight: 1 },
+                    { address: signerTwoHex, weight: 1 }
                 ]
             };
 
-            // Build permission update transaction
-            const permissionUpdateTx = await tronWeb.transactionBuilder.accountPermissionUpdate(
+            // Define active permissions
+            const activePermissions = [{
+                type: 2,
+                permission_name: 'active',
+                threshold: 2,
+                operations: '7fff1fc0033e0000000000000000000000000000000000000000000000000000',
+                keys: [
+                    { address: signerOneHex, weight: 1 },
+                    { address: signerTwoHex, weight: 1 }
+                ]
+            }];
+
+            // Define witness permission (minimal valid structure)
+            const witnessPermission = {
+                type: 1,
+                permission_name: 'witness',
+                threshold: 1,
+                keys: [{ address: signerOneHex, weight: 1 }]
+            };
+
+            // Build and send transaction
+            const transaction = await tronWeb.transactionBuilder.updateAccountPermissions(
                 wallet.address,
                 ownerPermission,
-                [activePermission], // Pass as array
-                [],
-                wallet.address
+                activePermissions,
+                witnessPermission
             );
 
-            // Sign and broadcast the transaction with the wallet's private key
-            const signedTx = await tronWeb.trx.sign(permissionUpdateTx, wallet.privateKey);
+            // Sign and broadcast
+            const signedTx = await tronWeb.trx.sign(transaction, wallet.privateKey);
             const broadcast = await tronWeb.trx.sendRawTransaction(signedTx);
 
             if (!broadcast.result) {
-                return res.status(500).json({ msg: 'Failed to update multisig permissions. Ensure the wallet has enough TRX.' });
+                return res.status(500).json({ 
+                    msg: 'Failed to update multisig permissions. Ensure the wallet has enough TRX.' 
+                });
             }
 
             res.status(200).json({ msg: 'Multisig permissions updated on-chain', tx: broadcast });
         } catch (err) {
-            console.error(err);
+            console.error('Error updating permissions:', err);
             res.status(500).json({ msg: 'Failed to update multisig permissions' });
         }
     });
@@ -113,7 +129,7 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
     });
 
     // Get TRC20 Token Balance for an address
-    router.get('/balance/trc20/:address/:contractAddress', async (req, res) => {
+    router.get('/balance/trc20/:address/:contractAddress', ensureAuthenticated, async (req, res) => {
         const { address, contractAddress } = req.params;
         if (!address || !contractAddress) return res.status(400).json({ msg: 'Address and contractAddress are required' });
         try {
@@ -129,7 +145,7 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
     });
 
     // Delete a wallet
-    router.delete('/:walletId', async (req, res) => {
+    router.delete('/:walletId', ensureAuthenticated, async (req, res) => {
         const { walletId } = req.params;
         if (!walletId) return res.status(400).json({ msg: 'walletId is required' });
 
@@ -145,7 +161,7 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
     });
 
     // Get all wallets
-    router.get('/', async (req, res) => {
+    router.get('/', ensureAuthenticated, async (req, res) => {
         try {
             const wallets = await Wallet.find();
             res.status(200).json({ wallets });
@@ -156,7 +172,7 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
     });
 
     // Get wallet by ID
-    router.get('/:walletId', async (req, res) => {
+    router.get('/:walletId', ensureAuthenticated, async (req, res) => {
         const { walletId } = req.params;
         if (!walletId) return res.status(400).json({ msg: 'walletId is required' });
 

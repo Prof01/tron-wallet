@@ -8,14 +8,14 @@ POST http://localhost:5000/api/wallets/update-permission
 Content-Type: application/json
 
 {
-    "walletId": "exampleWalletId"
+    "walletId": "6891ef23a561bde570f8e60a"
 }
 
 ### Get TRX Balance
-GET http://localhost:5000/api/wallets/balance/trx/exampleAddress
+GET http://localhost:5000/api/wallets/balance/trx/TYXZiS92bv4Mvu63rNBn8SPTU22tURgTAu
 
 ### Get TRC20 Token Balance
-GET http://localhost:5000/api/wallets/balance/trc20/exampleAddress/exampleContractAddress
+GET http://localhost:5000/api/wallets/balance/trc20/TYXZiS92bv4Mvu63rNBn8SPTU22tURgTAu/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
 
 ### Register User
 POST http://localhost:5000/api/users/register
@@ -51,7 +51,7 @@ GET http://localhost:5000/api/users/688f12052564638c02205453
 GET http://localhost:5000/api/wallets
 
 ### Delete Wallet
-DELETE http://localhost:5000/api/wallets/688db2cd0d0329746cc8e0c0
+DELETE http://localhost:5000/api/wallets/688db9b79b8b8f89cd00f394
 
 ### Get All Single Wallets
 GET http://localhost:5000/api/single-wallets
@@ -83,7 +83,7 @@ Content-Type: application/json
     "walletId": "exampleSingleWalletId",
     "toAddress": "exampleRecipientAddress",
     "amount": 100,
-    "contractAddress": "exampleContractAddress"
+    "contractAddress": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
 }
 
 ### Get Wallet By ID

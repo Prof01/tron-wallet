@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const hdkey = require('hdkey');
 const { generateMnemonic, mnemonicToSeedSync } = require('bip39');
+const ensureAuthenticated = require('../config/auth.js');
 
 module.exports = (SingleWallet, tronWeb) => {
     // Generate a single-user wallet
-    router.post('/generate', async (req, res) => {
+    router.post('/generate', ensureAuthenticated, async (req, res) => {
         try {
             const mnemonic = generateMnemonic();
             const seed = mnemonicToSeedSync(mnemonic);
@@ -29,7 +30,7 @@ module.exports = (SingleWallet, tronWeb) => {
     });
 
     // Send TRX from single-user wallet
-    router.post('/trx', async (req, res) => {
+    router.post('/trx', ensureAuthenticated, async (req, res) => {
         const { walletId, toAddress, amount } = req.body;
         if (!walletId || !toAddress || !amount)
             return res.status(400).json({ msg: 'Missing required fields' });
@@ -47,7 +48,7 @@ module.exports = (SingleWallet, tronWeb) => {
     });
 
     // Send TRC20 from single-user wallet
-    router.post('/trc20', async (req, res) => {
+    router.post('/trc20', ensureAuthenticated, async (req, res) => {
         const { walletId, toAddress, amount, tokenContractAddress } = req.body;
         if (!walletId || !toAddress || !amount || !tokenContractAddress)
             return res.status(400).json({ msg: 'Missing required fields' });
@@ -67,7 +68,7 @@ module.exports = (SingleWallet, tronWeb) => {
     });
 
     // Check TRX balance for an address
-    router.get('/balance/:address', async (req, res) => {
+    router.get('/balance/:address', ensureAuthenticated, async (req, res) => {
         try {
             const { address } = req.params;
             const balance = await tronWeb.trx.getBalance(address);
@@ -79,7 +80,7 @@ module.exports = (SingleWallet, tronWeb) => {
     });
 
     // Check TRC20 token balance for an address
-    router.get('/trc20-balance/:address/:tokenContractAddress', async (req, res) => {
+    router.get('/trc20-balance/:address/:tokenContractAddress', ensureAuthenticated, async (req, res) => {
         try {
             const { address, tokenContractAddress } = req.params;
             const contract = await tronWeb.contract().at(tokenContractAddress);
@@ -92,7 +93,7 @@ module.exports = (SingleWallet, tronWeb) => {
     });
 
     // Delete a single wallet
-    router.delete('/:walletId', async (req, res) => {
+    router.delete('/:walletId', ensureAuthenticated, async (req, res) => {
         const { walletId } = req.params;
         if (!walletId) return res.status(400).json({ msg: 'walletId is required' });
 
@@ -108,7 +109,7 @@ module.exports = (SingleWallet, tronWeb) => {
     });
 
     // Get all single wallets
-    router.get('/', async (req, res) => {
+    router.get('/', ensureAuthenticated, async (req, res) => {
         try {
             const wallets = await SingleWallet.find();
             res.status(200).json({ wallets });

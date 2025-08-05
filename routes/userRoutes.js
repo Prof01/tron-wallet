@@ -3,9 +3,10 @@ const User = require('../models/User');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const passport = require('passport');
+const ensureAuthenticated = require('../config/auth');
 
 // Register a new user
-router.post('/register', async (req, res) => {
+router.post('/register', ensureAuthenticated, async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
         return res.status(400).json({ msg: 'Username and password are required' });
@@ -19,7 +20,7 @@ router.post('/register', async (req, res) => {
 
         const user = new User({ username, password });
         await user.save();
-        res.status(201).json({ msg: 'User registered successfully' });
+        res.status(201).json({ msg: 'User registered successfully', user: { id: user._id, username: user.username } });
     } catch (err) {
         console.error(err);
         res.status(500).json({ msg: 'Failed to register user' });
@@ -27,7 +28,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Update user details
-router.put('/:id', async (req, res) => {
+router.put('/:id', ensureAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
         const updates = req.body;
@@ -40,7 +41,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete a user
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', ensureAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
         const deletedUser = await User.findByIdAndDelete(id);
@@ -73,7 +74,7 @@ router.post('/logout', (req, res, next) => {
 });
 
 // Get all users
-router.get('/', async (req, res) => {
+router.get('/', ensureAuthenticated, async (req, res) => {
     try {
         const users = await User.find();
         res.status(200).json({ users });
@@ -83,7 +84,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get user by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', ensureAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
         const user = await User.findById(id);
