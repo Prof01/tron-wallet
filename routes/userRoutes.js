@@ -1,19 +1,28 @@
 const express = require('express');
-const router = express.Router();
 const User = require('../models/User');
+const router = express.Router();
 const bcrypt = require('bcrypt');
 const passport = require('passport');
 
-// Create a new user
+// Register a new user
 router.post('/register', async (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ msg: 'Username and password are required' });
+    }
+
     try {
-        const { username, password } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ username, password: hashedPassword });
-        await newUser.save();
-        res.status(201).json({ message: 'User created successfully' });
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+            return res.status(400).json({ msg: 'Username already exists' });
+        }
+
+        const user = new User({ username, password });
+        await user.save();
+        res.status(201).json({ msg: 'User registered successfully' });
     } catch (err) {
-        res.status(500).json({ error: 'Error creating user', details: err.message });
+        console.error(err);
+        res.status(500).json({ msg: 'Failed to register user' });
     }
 });
 
@@ -26,7 +35,7 @@ router.put('/:id', async (req, res) => {
         if (!updatedUser) return res.status(404).json({ error: 'User not found' });
         res.json(updatedUser);
     } catch (err) {
-        res.status(500).json({ error: 'Error updating user', details: err.message });
+        res.status(500).json({ msg: 'Error updating user', details: err.message });
     }
 });
 
@@ -35,16 +44,22 @@ router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const deletedUser = await User.findByIdAndDelete(id);
-        if (!deletedUser) return res.status(404).json({ error: 'User not found' });
+        if (!deletedUser) return res.status(404).json({ msg: 'User not found' });
         res.json({ message: 'User deleted successfully' });
     } catch (err) {
-        res.status(500).json({ error: 'Error deleting user', details: err.message });
+        res.status(500).json({ msg: 'Error deleting user', details: err.message });
     }
 });
 
 // Login user
-router.post('/login', passport.authenticate('local'), (req, res) => {
-    res.json({ message: 'Login successful', user: req.user });
+router.post('/login', passport.authenticate('user-local'), (req, res) => {
+    req.login(req.user, (err) => {
+        if (err) {
+            console.error('Error during login:', err);
+            return res.status(500).json({ error: 'Login failed', details: err.message });
+        }
+        res.json({ msg: 'Login successful', user: req.user });
+    });
 });
 
 // Logout user
@@ -53,7 +68,7 @@ router.post('/logout', (req, res, next) => {
         if (err) {
             return next(err);
         }
-        res.json({ message: 'Logout successful' });
+        res.json({ msg: 'Logout successful' });
     });
 });
 
@@ -63,7 +78,7 @@ router.get('/', async (req, res) => {
         const users = await User.find();
         res.status(200).json({ users });
     } catch (err) {
-        res.status(500).json({ error: 'Error fetching users', details: err.message });
+        res.status(500).json({ msg: 'Error fetching users', details: err.message });
     }
 });
 
@@ -72,10 +87,10 @@ router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const user = await User.findById(id);
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (!user) return res.status(404).json({ msg: 'User not found' });
         res.status(200).json({ user });
     } catch (err) {
-        res.status(500).json({ error: 'Error fetching user', details: err.message });
+        res.status(500).json({ msg: 'Error fetching user', details: err.message });
     }
 });
 

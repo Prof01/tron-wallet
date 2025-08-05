@@ -10,6 +10,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const User = require('./models/User');
 const { TronWeb } = require('tronweb');
 const generateAccountWithPassphrase = require('./functions/generateAccountWithPassphrase');
+const bcrypt = require('bcrypt');
 
 const app = express();
 app.use(express.json());
@@ -25,21 +26,36 @@ const tronWeb = new TronWeb({
 });
 
 // Passport LocalStrategy configuration
-passport.use(new LocalStrategy(async (username, password, done) => {
-    try {
-        const user = await User.findOne({ username });
-        if (!user) return done(null, false, { message: 'Incorrect username.' });
-        const isValid = await user.isValidPassword(password);
-        if (!isValid) return done(null, false, { message: 'Incorrect password.' });
-        return done(null, user);
-    } catch (err) {
-        return done(err);
+passport.use('user-local', new LocalStrategy(
+    { usernameField: 'username', passReqToCallback: false },
+    async (username, password, done) => {
+        try {
+            console.log('Authenticating user:', username);
+            const user = await User.findOne({ username });
+            if (!user) {
+                console.log('User not found');
+                return done(null, false, { msg: 'Incorrect username.' });
+            }
+
+            const isValid = await bcrypt.compare(password, user.password);
+            if (!isValid) {
+                console.log('Invalid password');
+                return done(null, false, { msg: 'Incorrect password.' });
+            }
+
+            console.log('Authentication successful');
+            return done(null, user);
+        } catch (err) {
+            console.error('Error during authentication:', err);
+            return done(err); // Ensure `done` is called with the error
+        }
     }
-}));
+));
 
 passport.serializeUser((user, done) => {
     done(null, user.id);
 });
+
 passport.deserializeUser(async (id, done) => {
     try {
         const user = await User.findById(id);
@@ -71,20 +87,23 @@ const withdrawRoutes = require('./routes/withdrawRoutes')(Wallet, Approval, tron
 const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
 
-
-app.use('/api/wallets', walletRoutes);
-app.use('/api/single-wallets', singleWalletRoutes);
-app.use('/api/withdraw', withdrawRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/auth', authRoutes);
-
+// Initialize session middleware
 app.use(session({
     secret: process.env.SECRET_KEY,
     resave: false,
     saveUninitialized: false
 }));
+
+// Initialize Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Define routes
+app.use('/api/wallets', walletRoutes);
+app.use('/api/single-wallets', singleWalletRoutes);
+app.use('/api/withdraw', withdrawRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 
 cron.schedule('* * * * *', async () => {
     try {
