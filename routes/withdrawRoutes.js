@@ -1,9 +1,10 @@
 const express = require('express');
+const ensureAuthenticated = require('../config/auth');
 const router = express.Router();
 
 module.exports = (Wallet, Approval, tronWeb) => {
     // TRX withdrawal with multisig
-    router.post('/trx', async (req, res) => {
+    router.post('/trx', ensureAuthenticated, async (req, res) => {
         const { walletId, toAddress, amount } = req.body;
         if (!walletId || !toAddress || !amount)
             return res.status(400).json({ msg: 'Missing required fields' });
@@ -46,7 +47,7 @@ module.exports = (Wallet, Approval, tronWeb) => {
     });
 
     // TRC20 withdrawal with multisig
-    router.post('/trc20', async (req, res) => {
+    router.post('/trc20', ensureAuthenticated, async (req, res) => {
         const { walletId, toAddress, amount, tokenContractAddress } = req.body;
         if (!walletId || !toAddress || !amount || !tokenContractAddress)
             return res.status(400).json({ msg: 'Missing required fields' });

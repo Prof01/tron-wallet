@@ -75,6 +75,16 @@ Content-Type: application/json
     "amount": 10
 }
 
+### Send TRX from Multisig Wallet
+POST http://localhost:5000/api/withdraw/trx
+Content-Type: application/json
+
+{
+    "walletId": "6891ef23a561bde570f8e60a",
+    "toAddress": "THAL1TgD3uDbKUS5eQwW96HLPDZVbPVANK",
+    "amount": 10
+}
+
 ### Send TRC20 Token from Single Wallet
 POST http://localhost:5000/api/single-wallets/trc20
 Content-Type: application/json
