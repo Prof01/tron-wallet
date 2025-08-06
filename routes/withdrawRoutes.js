@@ -24,7 +24,8 @@ module.exports = (Wallet, Approval, tronWeb) => {
                 const fullySigned = await tronWeb.trx.multiSign(signedOnce, signerTwo.privateKey, wallet.address);
 
                 const broadcast = await tronWeb.trx.sendRawTransaction(fullySigned);
-                await Approval.create({
+               
+                { broadcast?.transaction?.visible && await Approval.create({
                     walletId,
                     type: 'TRX',
                     toAddress,
@@ -33,7 +34,7 @@ module.exports = (Wallet, Approval, tronWeb) => {
                     signatures: fullySigned.signature,
                     rawTx: fullySigned,
                     executed: true
-                });
+                });}
 
                 return res.status(200).json({ msg: 'TRX sent with multisig', broadcast });
             }
@@ -78,7 +79,7 @@ module.exports = (Wallet, Approval, tronWeb) => {
 
                 const broadcast = await tronWeb.trx.sendRawTransaction(fullySigned);
 
-                await Approval.create({
+                { broadcast?.transaction?.visible && await Approval.create({
                     walletId,
                     type: 'TRC20',
                     toAddress,
@@ -89,6 +90,7 @@ module.exports = (Wallet, Approval, tronWeb) => {
                     rawTx: fullySigned,
                     executed: true
                 });
+                }
 
                 return res.status(200).json({ msg: 'TRC20 sent with multisig', broadcast });
             }
