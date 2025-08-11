@@ -1,10 +1,10 @@
 ### Generate Wallet
-POST http://localhost:5000/api/wallets/generate
+POST http://localhost:5000/api/v1/wallets/generate
 Content-Type: application/json
 
 
 ### Update Multisig Permissions
-POST http://localhost:5000/api/wallets/update-permission
+POST http://localhost:5000/api/v1/wallets/update-permission
 Content-Type: application/json
 
 {
@@ -12,13 +12,13 @@ Content-Type: application/json
 }
 
 ### Get TRX Balance
-GET http://localhost:5000/api/wallets/balance/trx/TYXZiS92bv4Mvu63rNBn8SPTU22tURgTAu
+GET http://localhost:5000/api/v1/wallets/balance/trx/TYXZiS92bv4Mvu63rNBn8SPTU22tURgTAu
 
 ### Get TRC20 Token Balance
-GET http://localhost:5000/api/wallets/balance/trc20/TYXZiS92bv4Mvu63rNBn8SPTU22tURgTAu/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
+GET http://localhost:5000/api/v1/wallets/balance/trc20/TYXZiS92bv4Mvu63rNBn8SPTU22tURgTAu/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
 
 ### Register User
-POST http://localhost:5000/api/users/register
+POST http://localhost:5000/api/v1/users/register
 Content-Type: application/json
 
 {
@@ -27,7 +27,7 @@ Content-Type: application/json
 }
 
 ### Login User
-POST http://localhost:5000/api/users/login
+POST http://localhost:5000/api/v1/users/login
 Content-Type: application/json
 
 {
@@ -36,37 +36,37 @@ Content-Type: application/json
 }
 
 ### Logout User
-POST http://localhost:5000/api/users/logout
+POST http://localhost:5000/api/v1/users/logout
 
 ### Delete User
-DELETE http://localhost:5000/api/users/688f12052564638c02205453
+DELETE http://localhost:5000/api/v1/users/688f12052564638c02205453
 
 ### Get All Users
-GET http://localhost:5000/api/users
+GET http://localhost:5000/api/v1/users
 
 ### Get User By ID
-GET http://localhost:5000/api/users/688f12052564638c02205453
+GET http://localhost:5000/api/v1/users/688f12052564638c02205453
 
 ### Get All Wallets
-GET http://localhost:5000/api/wallets
+GET http://localhost:5000/api/v1/wallets
 
 ### Delete Wallet
-DELETE http://localhost:5000/api/wallets/688db9b79b8b8f89cd00f394
+DELETE http://localhost:5000/api/v1/wallets/688db9b79b8b8f89cd00f394
 
 ### Get All Single Wallets
-GET http://localhost:5000/api/single-wallets
+GET http://localhost:5000/api/v1/single-wallets
 
 ### Generate Single Wallet
-POST http://localhost:5000/api/single-wallets/generate
+POST http://localhost:5000/api/v1/single-wallets/generate
 Content-Type: application/json
 
 {}
 
 ### Delete Single Wallet
-DELETE http://localhost:5000/api/single-wallets/6891ff2e9fbeff02abe57f0b
+DELETE http://localhost:5000/api/v1/single-wallets/6891ff2e9fbeff02abe57f0b
 
 ### Send TRX from Single Wallet
-POST http://localhost:5000/api/single-wallets/trx
+POST http://localhost:5000/api/v1/single-wallets/trx
 Content-Type: application/json
 
 {
@@ -76,7 +76,7 @@ Content-Type: application/json
 }
 
 ### Send TRX from Multisig Wallet
-POST http://localhost:5000/api/withdraw/trx
+POST http://localhost:5000/api/v1/withdraw/trx
 Content-Type: application/json
 
 {
@@ -86,7 +86,7 @@ Content-Type: application/json
 }
 
 ### Send TRC20 Token from Single Wallet
-POST http://localhost:5000/api/single-wallets/trc20
+POST http://localhost:5000/api/v1/single-wallets/trc20
 Content-Type: application/json
 
 {
@@ -97,4 +97,4 @@ Content-Type: application/json
 }
 
 ### Get Wallet By ID
-GET http://localhost:5000/api/wallets/688db2cd0d0329746cc8e0c0
+GET http://localhost:5000/api/v1/wallets/688db2cd0d0329746cc8e0c0                    
