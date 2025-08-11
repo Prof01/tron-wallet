@@ -99,11 +99,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Define routes
-app.use('/api/wallets', walletRoutes);
-app.use('/api/single-wallets', singleWalletRoutes);
-app.use('/api/withdraw', withdrawRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/auth', authRoutes);
+app.use('/api/v1/wallets', walletRoutes);
+app.use('/api/v1/single-wallets', singleWalletRoutes);
+app.use('/api/v1/withdraw', withdrawRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/auth', authRoutes);
 
 cron.schedule('* * * * *', async () => {
     try {
