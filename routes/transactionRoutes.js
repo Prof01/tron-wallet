@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const TransactionLog = require('../models/TransactionLog');
+const ensureAuthenticated = require('../config/auth');
 
 
 // Get all Transaction Logs

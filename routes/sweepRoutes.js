@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const SweepLog = require('../models/SweepLog');
+const ensureAuthenticated = require('../config/auth');
 
 
 // Get all Sweep Logs
