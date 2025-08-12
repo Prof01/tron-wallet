@@ -44,6 +44,12 @@ DELETE http://localhost:5000/api/v1/users/688f12052564638c02205453
 ### Get All Users
 GET http://localhost:5000/api/v1/users
 
+### Get All Sweep Logs
+GET http://localhost:5000/api/v1/sweep-logs
+
+### Get All Transaction Logs
+GET http://localhost:5000/api/v1/transaction-logs
+
 ### Get User By ID
 GET http://localhost:5000/api/v1/users/688f12052564638c02205453
 
