@@ -119,5 +119,22 @@ module.exports = (SingleWallet, tronWeb) => {
         }
     });
 
+    
+        // Get wallet by ID
+        router.get('/:walletId', ensureAuthenticated, async (req, res) => {
+            const { walletId } = req.params;
+            if (!walletId) return res.status(400).json({ msg: 'walletId is required' });
+    
+            try {
+                const wallet = await SingleWallet.findById(walletId);
+                if (!wallet) return res.status(404).json({ msg: 'Wallet not found' });
+    
+                res.status(200).json({ wallet, msg: 'Success' });
+            } catch (err) {
+                console.error(err);
+                res.status(500).json({ msg: 'Failed to fetch wallet' });
+            }
+        });
+
     return router;
 };
