@@ -32,7 +32,7 @@ Content-Type: application/json
 
 {
     "username": "prof01",
-    "password": "0240119926@CoinsKart1"
+    "password": "0240119926@CoinsKart"
 }
 
 ### Logout User
@@ -95,6 +95,9 @@ Content-Type: application/json
     "amount": 100,
     "tokenContractAddress": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
 }
+
+### Get User
+GET http://localhost:5000/api/v1/users/user/dashboard
 
 ### Get Wallet By ID
 GET http://localhost:5000/api/v1/wallets/688db2cd0d0329746cc8e0c0                    

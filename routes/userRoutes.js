@@ -5,6 +5,16 @@ const bcrypt = require('bcrypt');
 const passport = require('passport');
 const ensureAuthenticated = require('../config/auth');
 
+router.param('userID', (req, res, next, id) => {
+  User.findById(id)
+    .then(user => {
+      if (!user) return res.status(404).json({ msg: 'user not found' });
+      req.user = user;
+      next();
+    })
+    .catch(err => next(err));
+});
+
 // Register a new user
 router.post('/register', ensureAuthenticated, async (req, res) => {
     const { username, password } = req.body;
@@ -106,13 +116,13 @@ router.get('/:id', ensureAuthenticated, async (req, res) => {
     }
 });
 
-// @route GET api/v1/users/user
+// @route GET api/v1/users/user/dashboard
 //@desc Get user Data
 //@access Private
-router.get('/user', ensureAuthenticated, async(req, res) => {
-
+router.get('/user/dashboard', ensureAuthenticated, async(req, res) => {
+    
   User.findById(req.user.id)
-  .select('-password -usedSalt')
+  .select('-password')
   .then(user => {
     res.status(200).json({
       user: user,
