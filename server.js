@@ -124,7 +124,7 @@ app.use('/api/v1/sweep-logs', sweepRoutes);
 app.use('/api/v1/transaction-logs', transactionRoutes);
 
 async function sweepWallets() {
-    console.log('Starting wallet sweep job...');
+    // console.log('Starting wallet sweep job...');
 
     try {
         const wallets = await Wallet.find({});
@@ -185,7 +185,7 @@ async function sweepWallets() {
         console.error('Polling error:', err);
     }
 
-    console.log('Wallet sweep job completed. Waiting 15 seconds before next run...');
+    // console.log('Wallet sweep job completed. Waiting 15 seconds before next run...');
     setTimeout(sweepWallets, 15000); // Wait 15 seconds after finishing
 }
 
