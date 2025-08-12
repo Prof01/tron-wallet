@@ -101,7 +101,7 @@ module.exports = (SingleWallet, tronWeb) => {
             const wallet = await SingleWallet.findByIdAndDelete(walletId);
             if (!wallet) return res.status(404).json({ msg: 'Wallet not found' });
 
-            res.status(200).json({ msg: 'Single wallet deleted successfully', wallet });
+            res.status(200).json({ msg: 'Single wallet deleted successfully', id: walletId });
         } catch (err) {
             console.error(err);
             res.status(500).json({ msg: 'Failed to delete single wallet' });

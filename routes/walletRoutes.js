@@ -153,7 +153,7 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
             const wallet = await Wallet.findByIdAndDelete(walletId);
             if (!wallet) return res.status(404).json({ msg: 'Wallet not found' });
 
-            res.status(200).json({ msg: 'Wallet deleted successfully', wallet });
+            res.status(200).json({ msg: 'Wallet deleted successfully', id: walletId });
         } catch (err) {
             console.error(err);
             res.status(500).json({ msg: 'Failed to delete wallet' });
