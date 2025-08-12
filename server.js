@@ -25,12 +25,12 @@ const tronWeb = new TronWeb({
     // privateKey: process.env.TRON_PRIVATE_KEY // Optional
 });
 
-// Passport LocalStrategy configuration
 passport.use('user-local', new LocalStrategy(
-    { usernameField: 'username', passReqToCallback: false },
-    async (username, password, done) => {
+    { usernameField: 'username', passReqToCallback: true },
+    async (req, username, password, done) => {
         try {
             console.log('Authenticating user:', username);
+
             const user = await User.findOne({ username });
             if (!user) {
                 console.log('User not found');
@@ -47,10 +47,11 @@ passport.use('user-local', new LocalStrategy(
             return done(null, user);
         } catch (err) {
             console.error('Error during authentication:', err);
-            return done(err); // Ensure `done` is called with the error
+            return done(err);
         }
     }
 ));
+
 
 passport.serializeUser((user, done) => {
     done(null, user.id);

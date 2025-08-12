@@ -53,14 +53,25 @@ router.delete('/:id', ensureAuthenticated, async (req, res) => {
 });
 
 // Login user
-router.post('/login', passport.authenticate('user-local'), (req, res) => {
-    req.login(req.user, (err) => {
+router.post('/login', (req, res, next) => {
+    passport.authenticate('user-local', (err, user, info) => {
         if (err) {
-            console.error('Error during login:', err);
-            return res.status(500).json({ msg: 'Login failed', details: err.message });
+            console.error('Authentication error:', err);
+            return res.status(500).json({ msg: 'Server error', details: err.message });
         }
-        res.json({ msg: 'Login successful', user: req.user });
-    });
+        if (!user) {
+            // `info` contains the message from LocalStrategy's `done(null, false, { msg: '...' })`
+            return res.status(401).json({ msg: info?.msg || 'Authentication failed' });
+        }
+
+        req.login(user, (err) => {
+            if (err) {
+                console.error('Error during login:', err);
+                return res.status(500).json({ msg: 'Login failed', details: err.message });
+            }
+            return res.json({ msg: 'Login successful', user });
+        });
+    })(req, res, next);
 });
 
 // Logout user
