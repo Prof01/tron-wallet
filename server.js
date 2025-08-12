@@ -31,7 +31,7 @@ passport.use('user-local', new LocalStrategy(
     async (username, password, done) => {
         try {
             console.log('Authenticating user:', username);
-            const user = await User.findOne({ username });
+            const user = await User.findOne({ username: username.toLowerCase() });
             if (!user) {
                 console.log('User not found');
                 return done(null, false, { msg: 'Incorrect username.' });
