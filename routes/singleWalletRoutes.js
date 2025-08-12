@@ -22,7 +22,7 @@ module.exports = (SingleWallet, tronWeb) => {
                 mnemonic
             });
 
-            res.status(201).json({ wallet });
+            res.status(201).json({ wallet, msg: 'Success' });
         } catch (err) {
             console.error(err);
             res.status(500).json({ msg: 'Failed to generate wallet' });
@@ -40,7 +40,7 @@ module.exports = (SingleWallet, tronWeb) => {
             const tx = await tronWeb.transactionBuilder.sendTrx(toAddress, tronWeb.toSun(amount), wallet.address);
             const signedTx = await tronWeb.trx.sign(tx, wallet.privateKey);
             const broadcast = await tronWeb.trx.sendRawTransaction(signedTx);
-            res.status(200).json({ message: 'TRX sent', broadcast });
+            res.status(200).json({ msg: 'TRX sent', broadcast });
         } catch (err) {
             console.error(err);
             res.status(500).json({ msg: 'TRX transaction failed' });
@@ -60,7 +60,7 @@ module.exports = (SingleWallet, tronWeb) => {
                 from: wallet.address,
                 privateKey: wallet.privateKey
             });
-            res.status(200).json({ message: 'TRC20 sent', tx });
+            res.status(200).json({ msg: 'TRC20 sent', tx });
         } catch (err) {
             console.error(err);
             res.status(500).json({ msg: 'TRC20 transaction failed' });
@@ -72,7 +72,7 @@ module.exports = (SingleWallet, tronWeb) => {
         try {
             const { address } = req.params;
             const balance = await tronWeb.trx.getBalance(address);
-            res.json({ address, balance: tronWeb.fromSun(balance) });
+            res.json({ address, balance: tronWeb.fromSun(balance), msg: 'Success' });
         } catch (err) {
             console.error(err);
             res.status(500).json({ msg: 'Failed to fetch TRX balance' });
@@ -85,7 +85,7 @@ module.exports = (SingleWallet, tronWeb) => {
             const { address, tokenContractAddress } = req.params;
             const contract = await tronWeb.contract().at(tokenContractAddress);
             const balance = await contract.methods.balanceOf(address).call();
-            res.json({ address, tokenContractAddress, balance: tronWeb.fromSun(balance) });
+            res.json({ address, tokenContractAddress, balance: tronWeb.fromSun(balance), msg: 'Success' });
         } catch (err) {
             console.error(err);
             res.status(500).json({ msg: 'Failed to fetch TRC20 balance' });
@@ -101,7 +101,7 @@ module.exports = (SingleWallet, tronWeb) => {
             const wallet = await SingleWallet.findByIdAndDelete(walletId);
             if (!wallet) return res.status(404).json({ msg: 'Wallet not found' });
 
-            res.status(200).json({ message: 'Single wallet deleted successfully', wallet });
+            res.status(200).json({ msg: 'Single wallet deleted successfully', wallet });
         } catch (err) {
             console.error(err);
             res.status(500).json({ msg: 'Failed to delete single wallet' });
@@ -112,7 +112,7 @@ module.exports = (SingleWallet, tronWeb) => {
     router.get('/', ensureAuthenticated, async (req, res) => {
         try {
             const wallets = await SingleWallet.find();
-            res.status(200).json({ wallets });
+            res.status(200).json({ wallets, msg: 'Success' });
         } catch (err) {
             console.error(err);
             res.status(500).json({ msg: 'Failed to fetch single wallets' });

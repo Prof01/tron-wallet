@@ -46,7 +46,7 @@ router.delete('/:id', ensureAuthenticated, async (req, res) => {
         const { id } = req.params;
         const deletedUser = await User.findByIdAndDelete(id);
         if (!deletedUser) return res.status(404).json({ msg: 'User not found' });
-        res.json({ message: 'User deleted successfully' });
+        res.json({ msg: 'User deleted successfully' });
     } catch (err) {
         res.status(500).json({ msg: 'Error deleting user', details: err.message });
     }
@@ -77,7 +77,7 @@ router.post('/logout', (req, res, next) => {
 router.get('/', ensureAuthenticated, async (req, res) => {
     try {
         const users = await User.find();
-        res.status(200).json({ users });
+        res.status(200).json({ users, msg: 'Success' });
     } catch (err) {
         res.status(500).json({ msg: 'Error fetching users', details: err.message });
     }
@@ -89,10 +89,28 @@ router.get('/:id', ensureAuthenticated, async (req, res) => {
         const { id } = req.params;
         const user = await User.findById(id);
         if (!user) return res.status(404).json({ msg: 'User not found' });
-        res.status(200).json({ user });
+        res.status(200).json({ user, msg: 'Success' });
     } catch (err) {
         res.status(500).json({ msg: 'Error fetching user', details: err.message });
     }
 });
+
+// @route GET api/v1/users/user
+//@desc Get user Data
+//@access Private
+router.get('/user', ensureAuthenticated, async(req, res) => {
+
+  User.findById(req.user.id)
+  .select('-password -usedSalt')
+  .then(user => {
+    res.status(200).json({
+      user: user,
+      msg: 'Success'
+    })
+  })
+  .catch(err => res.status(400).json({
+      msg: 'User not found'
+  }))
+})
 
 module.exports = router;

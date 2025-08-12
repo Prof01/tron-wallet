@@ -38,7 +38,7 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
                 }
             });
 
-            res.status(201).json({ wallet });
+            res.status(201).json({ wallet, msg: 'Success' });
         } catch (err) {
             console.error(err);
             res.status(500).json({ msg: 'Failed to generate wallet' });
@@ -121,7 +121,7 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
         try {
             const balanceInSun = await tronWeb.trx.getBalance(address);
             const balanceInTRX = tronWeb.fromSun(balanceInSun);
-            res.status(200).json({ address, balance: balanceInTRX });
+            res.status(200).json({ address, balance: balanceInTRX, msg: 'Success' });
         } catch (err) {
             console.error(err);
             res.status(500).json({ msg: 'Failed to fetch balance' });
@@ -137,7 +137,7 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
             const balance = await contract.methods.balanceOf(address).call();
             const decimals = await contract.methods.decimals().call();
             const formattedBalance = balance / Math.pow(10, decimals);
-            res.status(200).json({ address, contractAddress, balance: formattedBalance });
+            res.status(200).json({ address, contractAddress, balance: formattedBalance, msg: 'Success' });
         } catch (err) {
             console.error(err);
             res.status(500).json({ msg: 'Failed to fetch TRC20 token balance' });
@@ -164,7 +164,7 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
     router.get('/', ensureAuthenticated, async (req, res) => {
         try {
             const wallets = await Wallet.find();
-            res.status(200).json({ wallets });
+            res.status(200).json({ wallets, msg: 'Success' });
         } catch (err) {
             console.error(err);
             res.status(500).json({ msg: 'Failed to fetch wallets' });
@@ -180,7 +180,7 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
             const wallet = await Wallet.findById(walletId);
             if (!wallet) return res.status(404).json({ msg: 'Wallet not found' });
 
-            res.status(200).json({ wallet });
+            res.status(200).json({ wallet, msg: 'Success' });
         } catch (err) {
             console.error(err);
             res.status(500).json({ msg: 'Failed to fetch wallet' });

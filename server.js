@@ -85,7 +85,8 @@ const walletRoutes = require('./routes/walletRoutes')(Wallet, tronWeb, bip39, ge
 const singleWalletRoutes = require('./routes/singleWalletRoutes')(SingleWallet, tronWeb, bip39);
 const withdrawRoutes = require('./routes/withdrawRoutes')(Wallet, Approval, tronWeb);
 const userRoutes = require('./routes/userRoutes');
-const authRoutes = require('./routes/authRoutes');
+const sweepRoutes = require('./routes/sweepRoutes');
+const transactionRoutes = require('./routes/transactionRoutes');
 
 // Initialize session middleware
 app.use(session({
@@ -103,7 +104,8 @@ app.use('/api/v1/wallets', walletRoutes);
 app.use('/api/v1/single-wallets', singleWalletRoutes);
 app.use('/api/v1/withdraw', withdrawRoutes);
 app.use('/api/v1/users', userRoutes);
-app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/sweep-logs', sweepRoutes);
+app.use('/api/v1/transaction-logs', transactionRoutes);
 
 cron.schedule('* * * * *', async () => {
     try {
