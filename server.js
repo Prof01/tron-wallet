@@ -142,7 +142,7 @@ cron.schedule('* * * * *', async () => {
             if (balanceInTRX > 10 && sweepAddress && sweepAddress !== wallet.address) {
                 try {
                     // Leave a small amount for fees (e.g., 1 TRX)
-                    const sweepAmount = balance - tronWeb.toSun(1);
+                    const sweepAmount = balance - tronWeb.toSun(0.286); // 0.286 TRX is the estimated fee for a transaction
 
                     // Build and sign the transaction with both signers
                     const tx = await tronWeb.transactionBuilder.sendTrx(sweepAddress, sweepAmount, wallet.address);
