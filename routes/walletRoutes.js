@@ -87,7 +87,7 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
                 type: 1,
                 permission_name: 'witness',
                 threshold: 1,
-                keys: [{ address: signerOneHex, weight: 1 }]
+                keys: [{ address: wallet.address, weight: 1 }]
             };
 
             // Build and send transaction

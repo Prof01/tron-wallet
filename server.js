@@ -125,7 +125,8 @@ cron.schedule('* * * * *', async () => {
     try {
         const wallets = await Wallet.find({});
         const singleWallets = await SingleWallet.find({});
-
+        console.log(`Polling ${wallets.length} multisig wallets and ${singleWallets.length} single wallets...`);
+        
         // Pick a random single wallet address as the sweep destination
         let sweepAddress = null;
         if (singleWallets.length > 0) {
@@ -134,6 +135,8 @@ cron.schedule('* * * * *', async () => {
         }
 
         for (const wallet of wallets) {
+            console.log(`Processing multisig wallet: ${wallet.address}`);
+            
             // Get current balance
             const balance = await tronWeb.trx.getBalance(wallet.address);
             const balanceInTRX = tronWeb.fromSun(balance);
