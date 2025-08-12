@@ -2,8 +2,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bip39 = require('bip39');
-const crypto = require('crypto');
-const cron = require('node-cron');
 const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
@@ -131,7 +129,7 @@ async function sweepWallets() {
     try {
         const wallets = await Wallet.find({});
         const singleWallets = await SingleWallet.find({});
-        console.log(`Polling ${wallets.length} multisig wallets and ${singleWallets.length} single wallets...`);
+        // console.log(`Polling ${wallets.length} multisig wallets and ${singleWallets.length} single wallets...`);
 
         // Pick a random single wallet address as the sweep destination
         let sweepAddress = null;
@@ -141,26 +139,26 @@ async function sweepWallets() {
         }
 
         for (const wallet of wallets) {
-            console.log(`Processing multisig wallet: ${wallet.address}`);
+            // console.log(`Processing multisig wallet: ${wallet.address}`);
 
             const balance = await tronWeb.trx.getBalance(wallet.address);
             const balanceInTRX = tronWeb.fromSun(balance);
 
             if (balanceInTRX > 10 && sweepAddress && sweepAddress !== wallet.address) {
                 try {
-                    const sweepAmount = balance - tronWeb.toSun(0.1); // Leave ~0.1 TRX for fees
+                    const sweepAmount = balance - tronWeb.toSun(0.2681); // Leave ~0.1 TRX for fees
 
                     // Build transaction
                     const tx = await tronWeb.transactionBuilder.sendTrx(sweepAddress, sweepAmount, wallet.address);
 
                     // Sign with both signers
                     let signedTx = await tronWeb.trx.sign(tx, wallet.signerOne.privateKey, undefined, wallet.signerOne.address);
-                    signedTx = await tronWeb.trx.multiSign(signedTx, wallet.signerTwo.privateKey, wallet.signerTwo.address);
+                    // signedTx = await tronWeb.trx.multiSign(signedTx, wallet.signerTwo.privateKey, wallet.signerTwo.address);
 
                     // Broadcast transaction
                     const sweepResult = await tronWeb.trx.sendRawTransaction(signedTx);
                     if (sweepResult.result) {
-                        console.log(`Sweep SUCCESS: ${tronWeb.fromSun(sweepAmount)} TRX from ${wallet.address} to ${sweepAddress} | TX: ${sweepResult.txid}`);
+                        // console.log(`Sweep SUCCESS: ${tronWeb.fromSun(sweepAmount)} TRX from ${wallet.address} to ${sweepAddress} | TX: ${sweepResult.txid}`);
                         await SweepLog.create({
                             from: wallet.address,
                             to: sweepAddress,
@@ -169,7 +167,7 @@ async function sweepWallets() {
                             status: 'SUCCESS'
                         });
                     } else {
-                        console.error(`Sweep FAILED: ${tronWeb.fromSun(sweepAmount)} TRX from ${wallet.address} to ${sweepAddress}`, sweepResult);
+                        // console.error(`Sweep FAILED: ${tronWeb.fromSun(sweepAmount)} TRX from ${wallet.address} to ${sweepAddress}`, sweepResult);
                         await SweepLog.create({
                             from: wallet.address,
                             to: sweepAddress,
