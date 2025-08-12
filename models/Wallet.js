@@ -12,6 +12,7 @@ const WalletSchema = new mongoose.Schema({
     publicKey: { type: String, required: true },
     privateKey: { type: String, required: true },
     mnemonic: { type: String, required: true },
+    isMultiSig: { type: Boolean, default: false },
     signerOne: { type: SignerSchema, required: true },
     signerTwo: { type: SignerSchema, required: true },
     createdAt: { type: Date, default: Date.now }

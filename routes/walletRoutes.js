@@ -24,6 +24,7 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
                 publicKey: child.publicKey.toString('hex'),
                 privateKey,
                 mnemonic,
+                isMultiSig: false,
                 signerOne: {
                     address: signer1.address,
                     publicKey: signer1.publicKey,
@@ -107,6 +108,11 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
                 });
             }
 
+            // Update wallet to indicate it is now a multisig wallet
+            if(broadcast?.transaction?.visible) {
+                wallet.isMultiSig = true;
+                await wallet.save();
+            }
             res.status(200).json({ msg: 'Multisig permissions updated on-chain', tx: broadcast });
         } catch (err) {
             console.error('Error updating permissions:', err);
