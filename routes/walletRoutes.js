@@ -48,77 +48,86 @@ module.exports = (Wallet, tronWeb, DEFAULT_PASSPHRASES) => {
 
     // New route: Update multisig permissions for an existing wallet
     router.post('/update-permission', ensureAuthenticated, async (req, res) => {
-        const { walletId } = req.body;
-        if (!walletId) return res.status(400).json({ msg: 'walletId is required' });
+    const { walletId } = req.body;
+    if (!walletId) return res.status(400).json({ msg: 'walletId is required' });
 
-        try {
-            const wallet = await Wallet.findById(walletId);
-            if (!wallet) return res.status(404).json({ msg: 'Wallet not found' });
+    try {
+        const wallet = await Wallet.findById(walletId);
+        if (!wallet) return res.status(404).json({ msg: 'Wallet not found' });
 
-            // Convert addresses to hex format
-            const signerOneHex = tronWeb.address.toHex(wallet.signerOne.address);
-            const signerTwoHex = tronWeb.address.toHex(wallet.signerTwo.address);
-
-            // Define owner permission
-            const ownerPermission = {
-                type: 0,
-                permission_name: 'owner',
-                threshold: 2,
-                keys: [
-                    { address: signerOneHex, weight: 1 },
-                    { address: signerTwoHex, weight: 1 }
-                ]
-            };
-
-            // Define active permissions
-            const activePermissions = [{
-                type: 2,
-                permission_name: 'active',
-                threshold: 2,
-                operations: '7fff1fc0033e0000000000000000000000000000000000000000000000000000',
-                keys: [
-                    { address: signerOneHex, weight: 1 },
-                    { address: signerTwoHex, weight: 1 }
-                ]
-            }];
-
-            // Define witness permission (minimal valid structure)
-            const witnessPermission = {
-                type: 1,
-                permission_name: 'witness',
-                threshold: 1,
-                keys: [{ address: wallet.address, weight: 1 }]
-            };
-
-            // Build and send transaction
-            const transaction = await tronWeb.transactionBuilder.updateAccountPermissions(
-                wallet.address,
-                ownerPermission,
-                activePermissions,
-                witnessPermission
-            );
-
-            // Sign and broadcast
-            const signedTx = await tronWeb.trx.sign(transaction, wallet.privateKey);
-            const broadcast = await tronWeb.trx.sendRawTransaction(signedTx);
-
-            if (!broadcast.result) {
-                return res.status(500).json({ 
-                    msg: 'Failed to update multisig permissions. Ensure the wallet has enough TRX.' 
-                });
+        // Ensure addresses are proper hex
+        function normalizeToHex(address) {
+            if (address.startsWith('41') && address.length === 42) {
+                return address;
             }
-
-            // Update wallet to indicate it is now a multisig wallet
-            if(broadcast?.transaction?.visible) {
-                wallet.isMultiSig = true;
-                await wallet.save();
-            }
-            res.status(200).json({ msg: 'Multisig permissions updated on-chain', tx: broadcast });
-        } catch (err) {
-            console.error('Error updating permissions:', err);
-            res.status(500).json({ msg: 'Failed to update multisig permissions' });
+            return tronWeb.address.toHex(address);
         }
-    });
+
+        const signerOneHex = normalizeToHex(wallet.signerOne.address);
+        const signerTwoHex = normalizeToHex(wallet.signerTwo.address);
+
+        
+        // Owner permission
+        const ownerPermission = {
+            type: 0,
+            permission_name: 'owner',
+            threshold: 2,
+            keys: [
+                { address: signerOneHex, weight: 1 },
+                { address: signerTwoHex, weight: 1 }
+            ]
+        };
+
+        // Active permission
+        const activePermissions = [{
+            type: 2,
+            permission_name: 'active',
+            threshold: 2,
+            operations: '7fff1fc0033e0000000000000000000000000000000000000000000000000000',
+            keys: [
+                { address: signerOneHex, weight: 1 },
+                { address: signerTwoHex, weight: 1 }
+            ]
+        }];
+
+        // Minimal valid witness permission
+        const witnessPermission = {
+            type: 1,
+            permission_name: 'witness',
+            threshold: 1,
+            keys: [
+                { address: signerOneHex, weight: 1 }
+            ]
+        };
+
+        // Build and send transaction
+        const transaction = await tronWeb.transactionBuilder.updateAccountPermissions(
+            wallet.address,
+            ownerPermission,
+            activePermissions,
+            witnessPermission
+        );
+
+        const signedTx = await tronWeb.trx.sign(transaction, wallet.privateKey);
+        const broadcast = await tronWeb.trx.sendRawTransaction(signedTx);
+
+        if (!broadcast.result) {
+            return res.status(500).json({
+                msg: 'Failed to update multisig permissions. Ensure the wallet has enough TRX.'
+            });
+        }
+
+        wallet.isMultiSig = true;
+        await wallet.save();
+
+        res.status(200).json({ msg: 'Multisig permissions updated on-chain', tx: broadcast });
+
+    } catch (err) {
+        console.error('Error updating permissions:', err);
+        res.status(500).json({ msg: 'Failed to update multisig permissions' });
+    }
+});
+
 
     // Get TRX Balance for an address
     router.get('/balance/trx/:address', async (req, res) => {
