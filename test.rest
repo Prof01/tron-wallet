@@ -32,7 +32,7 @@ Content-Type: application/json
 
 {
     "username": "prof01",
-    "password": "0240119926@CoinsKart"
+    "password": "0240119926@CoinsKart1"
 }
 
 ### Logout User
