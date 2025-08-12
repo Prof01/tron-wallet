@@ -20,10 +20,12 @@ module.exports = (Wallet, Approval, tronWeb) => {
 
             if (!approval) {
                 const tx = await tronWeb.transactionBuilder.sendTrx(toAddress, tronWeb.toSun(amount), wallet.address);
-                const signedOnce = await tronWeb.trx.sign(tx, signerOne.privateKey, undefined, wallet.address);
-                const fullySigned = await tronWeb.trx.multiSign(signedOnce, signerTwo.privateKey, wallet.address);
+                // const signedOnce = await tronWeb.trx.sign(tx, signerOne.privateKey, undefined, wallet.signerOne.address);
+                // const fullySigned = await tronWeb.trx.multiSign(signedOnce, signerTwo.privateKey, wallet.address);
 
-                const broadcast = await tronWeb.trx.sendRawTransaction(fullySigned);
+                    // Sign with both signers
+                    let signedTx = await tronWeb.trx.sign(tx, wallet.signerOne.privateKey, undefined, wallet.signerOne.address);
+                const broadcast = await tronWeb.trx.sendRawTransaction(signedTx);
                
                 { broadcast?.transaction?.visible && await Approval.create({
                     walletId,
@@ -74,10 +76,12 @@ module.exports = (Wallet, Approval, tronWeb) => {
                     onlyRaw: true
                 });
 
-                const signedOnce = await tronWeb.trx.sign(tx, signerOne.privateKey, undefined, wallet.address);
-                const fullySigned = await tronWeb.trx.multiSign(signedOnce, signerTwo.privateKey, wallet.address);
-
-                const broadcast = await tronWeb.trx.sendRawTransaction(fullySigned);
+                // const signedOnce = await tronWeb.trx.sign(tx, signerOne.privateKey, undefined, wallet.address);
+                // const fullySigned = await tronWeb.trx.multiSign(signedOnce, signerTwo.privateKey, wallet.address);
+                
+                let signedTx = await tronWeb.trx.sign(tx, wallet.signerOne.privateKey, undefined, wallet.signerOne.address);
+              
+                const broadcast = await tronWeb.trx.sendRawTransaction(signedTx);
 
                 { broadcast?.transaction?.visible && await Approval.create({
                     walletId,
