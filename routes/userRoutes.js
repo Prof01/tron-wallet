@@ -23,7 +23,7 @@ router.post('/register', ensureAuthenticated, async (req, res) => {
     }
 
     try {
-        const existingUser = await User.findOne({ username });
+        const existingUser = await User.findOne({ username: username.toLowerCase() });
         if (existingUser) {
             return res.status(400).json({ msg: 'Username already exists' });
         }
