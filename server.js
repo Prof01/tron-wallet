@@ -11,6 +11,7 @@ const User = require('./models/User');
 const { TronWeb } = require('tronweb');
 const generateAccountWithPassphrase = require('./functions/generateAccountWithPassphrase');
 const bcrypt = require('bcrypt');
+const MongoStore = require('connect-mongo');
 
 const app = express();
 app.use(express.json());
@@ -89,11 +90,24 @@ const sweepRoutes = require('./routes/sweepRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 
 // Initialize session middleware
-app.use(session({
-    secret: process.env.SECRET_KEY,
-    resave: false,
-    saveUninitialized: false
-}));
+const mongoOptions = {
+    mongoUrl: process.env.MONGODB_URI,
+}
+
+// 72 hours
+const MAX_AGE = 72 * 60 * 60 * 1000;
+//Express Session
+app.set('trust proxy', 1) // trust first proxy
+app.use(
+session({
+secret: process.env.SECRET_KEY,
+cookie: { maxAge:  MAX_AGE},
+name: 'Session',
+resave: true,
+store: MongoStore.create(mongoOptions),
+saveUninitialized: false,
+}),
+);
 
 // Initialize Passport middleware
 app.use(passport.initialize());
