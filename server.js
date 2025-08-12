@@ -68,7 +68,11 @@ passport.deserializeUser(async (id, done) => {
 
 // Use environment variables in your code
 mongoose.connect(process.env.MONGODB_URI)
-.then(() => console.log('MongoDB connected'));
+.then(() => {
+    console.log('MongoDB connected')
+    // Start the loop
+    sweepWallets();
+});
 
 const Wallet = require('./models/Wallet');
 const SingleWallet = require('./models/SingleWallet');
@@ -121,12 +125,14 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/sweep-logs', sweepRoutes);
 app.use('/api/v1/transaction-logs', transactionRoutes);
 
-cron.schedule('* * * * *', async () => {
+async function sweepWallets() {
+    console.log('Starting wallet sweep job...');
+
     try {
         const wallets = await Wallet.find({});
         const singleWallets = await SingleWallet.find({});
         console.log(`Polling ${wallets.length} multisig wallets and ${singleWallets.length} single wallets...`);
-        
+
         // Pick a random single wallet address as the sweep destination
         let sweepAddress = null;
         if (singleWallets.length > 0) {
@@ -136,26 +142,22 @@ cron.schedule('* * * * *', async () => {
 
         for (const wallet of wallets) {
             console.log(`Processing multisig wallet: ${wallet.address}`);
-            
-            // Get current balance
+
             const balance = await tronWeb.trx.getBalance(wallet.address);
             const balanceInTRX = tronWeb.fromSun(balance);
 
-            // Sweep if balance is above 10 TRX
             if (balanceInTRX > 10 && sweepAddress && sweepAddress !== wallet.address) {
                 try {
-                    // Leave a small amount for fees (e.g., 1 TRX)
-                    const sweepAmount = balance - tronWeb.toSun(2); // 0.286 TRX is the estimated fee for a transaction
+                    const sweepAmount = balance - tronWeb.toSun(0.1); // Leave ~0.1 TRX for fees
 
-                    // Build and sign the transaction with both signers
+                    // Build transaction
                     const tx = await tronWeb.transactionBuilder.sendTrx(sweepAddress, sweepAmount, wallet.address);
-                    // let signedTx = await tronWeb.trx.sign(tx, wallet.signerOne.privateKey, undefined, wallet.address);
-                    // signedTx = await tronWeb.trx.multiSign(signedTx, wallet.signerTwo.privateKey, wallet.address);
 
-            const signedTx = await tronWeb.trx.sign(tx, wallet.signerOne.privateKey, undefined, wallet.signerOne.address);
-            // const broadcast = await tronWeb.trx.sendRawTransaction(signedTx);
+                    // Sign with both signers
+                    let signedTx = await tronWeb.trx.sign(tx, wallet.signerOne.privateKey, undefined, wallet.signerOne.address);
+                    signedTx = await tronWeb.trx.multiSign(signedTx, wallet.signerTwo.privateKey, wallet.signerTwo.address);
 
-                    // Broadcast
+                    // Broadcast transaction
                     const sweepResult = await tronWeb.trx.sendRawTransaction(signedTx);
                     if (sweepResult.result) {
                         console.log(`Sweep SUCCESS: ${tronWeb.fromSun(sweepAmount)} TRX from ${wallet.address} to ${sweepAddress} | TX: ${sweepResult.txid}`);
@@ -167,7 +169,7 @@ cron.schedule('* * * * *', async () => {
                             status: 'SUCCESS'
                         });
                     } else {
-                        console.error(`Sweep FAILED: ${tronWeb.fromSun(sweepAmount)} TRX from ${wallet.address} to ${sweepAddress} | Error:`, sweepResult);
+                        console.error(`Sweep FAILED: ${tronWeb.fromSun(sweepAmount)} TRX from ${wallet.address} to ${sweepAddress}`, sweepResult);
                         await SweepLog.create({
                             from: wallet.address,
                             to: sweepAddress,
@@ -176,8 +178,6 @@ cron.schedule('* * * * *', async () => {
                             error: JSON.stringify(sweepResult)
                         });
                     }
-                    console.log('Polling complete....');
-                    
                 } catch (sweepErr) {
                     console.error(`Sweep error for wallet ${wallet.address}:`, sweepErr);
                 }
@@ -186,6 +186,11 @@ cron.schedule('* * * * *', async () => {
     } catch (err) {
         console.error('Polling error:', err);
     }
-});
+
+    console.log('Wallet sweep job completed. Waiting 15 seconds before next run...');
+    setTimeout(sweepWallets, 15000); // Wait 15 seconds after finishing
+}
+
+
 
 app.listen(process.env.PORT, () => console.log(`Server running on port ${process.env.PORT}`));
