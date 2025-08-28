@@ -69,7 +69,7 @@ mongoose.connect(process.env.MONGODB_URI)
 .then(() => {
     console.log('MongoDB connected')
     // Start the loop
-    sweepWallets();
+    // sweepWallets();
 });
 
 const Wallet = require('./models/Wallet');
@@ -186,7 +186,7 @@ async function sweepWallets() {
     }
 
     // console.log('Wallet sweep job completed. Waiting 15 seconds before next run...');
-    setTimeout(sweepWallets, 15000); // Wait 15 seconds after finishing
+    // setTimeout(sweepWallets, 15000); // Wait 15 seconds after finishing
 }
 
 
