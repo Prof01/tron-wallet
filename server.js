@@ -144,7 +144,7 @@ async function sweepWallets() {
             const balance = await tronWeb.trx.getBalance(wallet.address);
             const balanceInTRX = tronWeb.fromSun(balance);
 
-            if (balanceInTRX > 10 && sweepAddress && sweepAddress !== wallet.address) {
+            if (balanceInTRX > 100 && sweepAddress && sweepAddress !== wallet.address) {
                 try {
                     const sweepAmount = balance - tronWeb.toSun(0.2681); // Leave ~0.1 TRX for fees
 
